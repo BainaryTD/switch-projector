@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Control Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom styles for absolute positioning inside preview containers */
+    .preview-container #holdPlayer,
+    .preview-container #holdImage,
+    .preview-container #liveViewerVideo,
+    .preview-container #liveViewerImage {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  </style>
+</head>
+
+<body class="bg-[#121212] text-white p-5 font-sans">
+  <div class="max-w-4xl mx-auto flex flex-col gap-5">
+    <h1 class="text-3xl font-semibold m-0">Projector Control 🖥️</h1>
+
+    <!-- 1. Target Screen -->
+    <div class="bg-[#1e1e1e] p-5 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mt-0 mb-3">1. Target Screen</h2>
+      <div class="flex items-center gap-2">
+        <select id="monitorSelect"
+          class="bg-zinc-700 text-white border border-zinc-600 rounded px-3 py-2 text-base h-[42px] m-0"></select>
+        <button class="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded-md transition-colors h-[42px]"
+          id="btnChangeMonitor">Switch Display Window</button>
+      </div>
+    </div>
+
+    <!-- 2. Media Queue -->
+    <div class="bg-[#1e1e1e] p-5 rounded-lg shadow-md">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="text-xl font-semibold m-0">2. Media Queue</h2>
+        <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 text-sm rounded transition-colors"
+          id="btnSelectFile">➕ Add Files...</button>
+      </div>
+      <div id="playlistContainer"
+        class="max-h-[150px] overflow-y-auto bg-zinc-900 rounded-lg border border-zinc-800 p-1 mt-2">
+        <div id="queueEmpty" class="flex items-center justify-center w-full h-full text-zinc-500 italic py-4">Queue is
+          empty</div>
+      </div>
+    </div>
+
+    <!-- 3. Media Control -->
+    <div class="bg-[#1e1e1e] p-5 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mt-0 mb-3">3. Media Control (Preview & Live)</h2>
+
+      <!-- Split View -->
+      <div class="flex gap-5">
+
+        <!-- A: Hold / Standby -->
+        <div class="flex-1 flex flex-col min-w-0">
+          <div class="flex justify-between items-center mb-1">
+            <h3 class="text-lg text-zinc-400 m-0">A. Hold / Standby</h3>
+          </div>
+          <p class="text-sm m-0 mb-3 whitespace-nowrap overflow-hidden text-ellipsis">Selected: <span
+              id="lblSelectedPath" class="text-blue-400 break-all">None</span></p>
+
+          <div class="flex-1 mt-3 bg-[#111] border border-zinc-800 rounded-lg p-3 flex flex-col min-h-[260px]">
+            <div
+              class="flex-1 w-full bg-black rounded-md overflow-hidden border border-zinc-700 relative preview-container">
+              <video id="holdPlayer" controls style="display: none;"></video>
+              <img id="holdImage" style="display: none;" />
+              <div id="holdEmpty"
+                class="absolute inset-0 flex items-center justify-center bg-[#222] text-zinc-500 italic z-[2]">
+                No Media Selected</div>
+            </div>
+          </div>
+
+          <div class="mt-auto pt-4 flex flex-col gap-3">
+            <button
+              class="w-full py-3 text-lg font-bold bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded transition-colors"
+              id="btnSend" disabled>1. Send to Hold Screen</button>
+            <button
+              class="w-full py-3 text-lg font-bold bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded transition-colors"
+              id="btnQuickLive" disabled>⚡ Quick Send to Live</button>
+          </div>
+        </div>
+
+        <!-- B: Live Controls -->
+        <div class="flex-1 flex flex-col min-w-0">
+          <div class="flex justify-between items-center mb-1">
+            <h3 class="text-lg text-zinc-400 m-0">B. Live Controls and Audio Control</h3>
+            <span class="bg-red-500 text-white px-2 py-0.5 rounded font-bold text-xs">LIVE</span>
+          </div>
+          <p class="text-sm m-0 mb-3 whitespace-nowrap overflow-hidden text-ellipsis" id="liveLabelRow">
+            Playing: <span id="lblLivePath" class="text-green-500">Standby</span>
+          </p>
+
+          <div class="flex-1 mt-3 bg-[#111] border border-zinc-800 rounded-lg p-3 flex flex-col gap-2 min-h-[260px]">
+            <div class="flex justify-between flex-wrap gap-4 shrink-0">
+              <div class="flex gap-4">
+                <label class="cursor-pointer font-bold text-sm flex items-center gap-1"><input type="checkbox"
+                    id="chkKeepAudio" class="m-0"> 🎵 Keep Audio</label>
+                <label class="cursor-pointer font-bold text-sm flex items-center gap-1"><input type="checkbox"
+                    id="chkLoop" class="m-0"> 🔁 Loop</label>
+              </div>
+              <div class="flex gap-1.5">
+                <button class="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-1.5 text-sm rounded transition-colors"
+                  id="btnLocalPlay" title="Play">เล่น</button>
+                <button class="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-1.5 text-sm rounded transition-colors"
+                  id="btnLocalPause" title="Pause">หยุด</button>
+              </div>
+            </div>
+            <div
+              class="flex-1 w-full bg-black rounded-md border border-zinc-700 relative overflow-hidden flex items-center justify-center">
+              <video id="livePlayer" controls style="display:none;"
+                class="absolute inset-0 w-full h-full object-contain z-[1]"></video>
+              <div id="liveControlEmpty"
+                class="absolute inset-0 bg-[#222] text-zinc-500 italic text-sm flex items-center justify-center z-[2]"
+                style="display:flex;">
+                No media playing
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-auto pt-4 flex flex-col gap-3">
+            <button
+              class="w-full py-3 text-lg font-bold bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded transition-colors"
+              id="btnPlay" disabled>2. ▶ Send to Live (Play Now)</button>
+            <button
+              class="w-full py-3 text-lg font-bold bg-zinc-700 hover:bg-zinc-600 text-white rounded transition-colors"
+              id="btnSnapshot">📸 Snapshot Live to Queue</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- C: Live Preview -->
+      <div class="mt-5 border-t border-zinc-800 pt-4">
+        <div class="flex justify-between items-center mb-2 mt-2">
+          <h3 class="text-lg text-zinc-400 m-0">C. Live Preview</h3>
+          <span class="bg-red-500 text-white px-2 py-0.5 rounded font-bold text-xs">LIVE</span>
+        </div>
+        <div
+          class="w-full aspect-video bg-black rounded-lg overflow-hidden border-2 border-red-500 relative preview-container max-h-[280px]">
+          <video id="liveViewerVideo" controls style="display: none;"></video>
+          <img id="liveViewerImage" style="display: none;" />
+          <div id="liveViewerEmpty"
+            class="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-[#222] text-zinc-500 italic z-[2]">
+            Projector Standby 💤</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Quick Actions -->
+    <div class="bg-[#1e1e1e] p-5 rounded-lg shadow-md flex flex-col gap-4">
+      <h2 class="text-xl font-semibold m-0">4. Quick Actions</h2>
+      <button class="w-full py-4 text-xl font-bold bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+        id="btnHold">🛑 Emergency Cut to Standby</button>
+    </div>
+  </div>
+  <script type="module" src="control.js"></script>
+</body>
+
+</html>
