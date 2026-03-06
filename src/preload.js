@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // New Feature APIs
     captureLive: () => ipcRenderer.invoke('capture-live'),
     setLoop: (loopValue) => ipcRenderer.send('SET_LOOP', loopValue),
+    setFadeTime: (time) => ipcRenderer.send('SET_FADE_TIME', time),
 
     // Sync Media Control
     mediaPlay: () => ipcRenderer.send('MEDIA_PLAY'),
@@ -23,6 +24,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onPlayNow: (callback) => ipcRenderer.on('PLAY_NOW', (event, keepAudio) => callback(keepAudio)),
     onShowHold: (callback) => ipcRenderer.on('SHOW_HOLD', () => callback()),
     onSetLoop: (callback) => ipcRenderer.on('SET_LOOP', (event, loopValue) => callback(loopValue)),
+    onSetFadeTime: (callback) => ipcRenderer.on('SET_FADE_TIME', (event, time) => callback(time)),
 
     onMediaPlay: (callback) => ipcRenderer.on('MEDIA_PLAY', () => callback()),
     onMediaPause: (callback) => ipcRenderer.on('MEDIA_PAUSE', () => callback()),

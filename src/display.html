@@ -26,7 +26,7 @@
             z-index: 10;
             color: white;
             flex-direction: column;
-            transition: opacity 0.3s;
+            transition: opacity 1.5s;
         }
 
         #holdText {
@@ -52,7 +52,10 @@
     <div id="holdScreen">
         <div id="holdText">Projector App Standby 💤</div>
     </div>
-    <video id="videoPlayer"></video>
+    <div id="blackFade"
+        style="position: absolute; top:0; left:0; width: 100%; height: 100%; background: #000; z-index: 8; opacity: 0; pointer-events: none; transition: opacity 0.8s;">
+    </div>
+    <video id="videoPlayer" muted></video>
     <img id="imagePlayer" style="display: none;" />
     <script src="display.js"></script>
 </body>

@@ -111,6 +111,11 @@ ipcMain.on('SET_LOOP', (event, loopValue) => {
     if (displayWindow) displayWindow.webContents.send('SET_LOOP', loopValue);
 });
 
+// IPC: Set Fade Time
+ipcMain.on('SET_FADE_TIME', (event, time) => {
+    if (displayWindow) displayWindow.webContents.send('SET_FADE_TIME', time);
+});
+
 // IPC: Media Controls sync
 ipcMain.on('MEDIA_PLAY', () => { if (displayWindow) displayWindow.webContents.send('MEDIA_PLAY'); });
 ipcMain.on('MEDIA_PAUSE', () => { if (displayWindow) displayWindow.webContents.send('MEDIA_PAUSE'); });

@@ -80,6 +80,18 @@ document.addEventListener('DOMContentLoaded', () => {
         syncManager.setLoop(e.target.checked);
     });
 
+    const numFadeTime = document.getElementById('numFadeTime');
+    if (numFadeTime) {
+        const sendFadeTime = () => {
+            const time = parseFloat(numFadeTime.value);
+            if (!isNaN(time) && time >= 0) {
+                window.electronAPI.setFadeTime(time);
+            }
+        };
+        numFadeTime.addEventListener('input', sendFadeTime);
+        sendFadeTime(); // Send initial value
+    }
+
     document.getElementById('btnLocalPlay').addEventListener('click', () => {
         document.getElementById('livePlayer').play().catch(e => console.log(e));
     });

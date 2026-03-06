@@ -68,7 +68,7 @@
           <div class="flex-1 mt-3 bg-[#111] border border-zinc-800 rounded-lg p-3 flex flex-col min-h-[260px]">
             <div
               class="flex-1 w-full bg-black rounded-md overflow-hidden border border-zinc-700 relative preview-container">
-              <video id="holdPlayer" controls style="display: none;"></video>
+              <video id="holdPlayer" controls muted style="display: none;"></video>
               <img id="holdImage" style="display: none;" />
               <div id="holdEmpty"
                 class="absolute inset-0 flex items-center justify-center bg-[#222] text-zinc-500 italic z-[2]">
@@ -103,6 +103,11 @@
                     id="chkKeepAudio" class="m-0"> 🎵 Keep Audio</label>
                 <label class="cursor-pointer font-bold text-sm flex items-center gap-1"><input type="checkbox"
                     id="chkLoop" class="m-0"> 🔁 Loop</label>
+                <label class="font-bold text-sm flex items-center gap-1" title="Fade time in seconds">
+                  ⏱️ Fade: <input type="number" id="numFadeTime"
+                    class="w-16 bg-zinc-700 text-white border border-zinc-600 rounded px-1 min-h-[24px]" value="0.8"
+                    step="0.1" min="0"> s
+                </label>
               </div>
               <div class="flex gap-1.5">
                 <button class="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-1.5 text-sm rounded transition-colors"
@@ -142,7 +147,7 @@
         </div>
         <div
           class="w-full aspect-video bg-black rounded-lg overflow-hidden border-2 border-red-500 relative preview-container max-h-[280px]">
-          <video id="liveViewerVideo" controls style="display: none;"></video>
+          <video id="liveViewerVideo" controls muted style="display: none;"></video>
           <img id="liveViewerImage" style="display: none;" />
           <div id="liveViewerEmpty"
             class="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-[#222] text-zinc-500 italic z-[2]">
