@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btnQuickLive').addEventListener('click', () => {
         if (currentHoldFile) {
-            sendToLive(currentHoldFile);
+            sendToLive(currentHoldFile, true /* isQuick */);
         }
     });
 
@@ -92,13 +92,20 @@ document.addEventListener('DOMContentLoaded', () => {
         sendFadeTime(); // Send initial value
     }
 
-    document.getElementById('btnLocalPlay').addEventListener('click', () => {
-        document.getElementById('livePlayer').play().catch(e => console.log(e));
-    });
-
-    document.getElementById('btnLocalPause').addEventListener('click', () => {
-        document.getElementById('livePlayer').pause();
-    });
+    // btnLocalPlay / btnLocalPause are currently hidden in HTML — skip their listeners
+    // so that errors here don't block later listeners (e.g. btnSnapshot)
+    const _btnLocalPlay = document.getElementById('btnLocalPlay');
+    if (_btnLocalPlay) {
+        _btnLocalPlay.addEventListener('click', () => {
+            document.getElementById('livePlayer').play().catch(e => console.log(e));
+        });
+    }
+    const _btnLocalPause = document.getElementById('btnLocalPause');
+    if (_btnLocalPause) {
+        _btnLocalPause.addEventListener('click', () => {
+            document.getElementById('livePlayer').pause();
+        });
+    }
 
     document.getElementById('btnSnapshot').addEventListener('click', async () => {
         const snapshotPath = await window.electronAPI.captureLive();
@@ -112,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function sendToLive(filePath) {
+function sendToLive(filePath, isQuick = false) {
     const keepAudioRaw = document.getElementById('chkKeepAudio');
     const keepAudio = keepAudioRaw ? keepAudioRaw.checked : false;
 
@@ -130,14 +137,26 @@ function sendToLive(filePath) {
     const livePlayer = document.getElementById('livePlayer');
     const liveCtrlEmpty = document.getElementById('liveControlEmpty');
 
-    if (isImg && keepAudio) {
+    // Check if there is currently a video playing in the B panel
+    const videoCurrentlyPlaying = livePlayer.src && !livePlayer.paused && !livePlayer.ended;
+    const videoLoaded = livePlayer.src && livePlayer.src !== window.location.href;
+
+    if (isImg && isQuick && videoLoaded) {
+        // Quick Send to Live with an image — keep current video playing in B panel
+        // Do NOT stop or change livePlayer; it stays for audio/video control
+        livePlayer.style.display = 'block';
+        liveCtrlEmpty.style.display = 'none';
+    } else if (isImg && keepAudio) {
+        // Send to Hold then Live with Keep Audio: show livePlayer for audio control
         livePlayer.style.display = 'block';
         liveCtrlEmpty.style.display = 'none';
     } else if (isImg) {
+        // Image without any active video — show placeholder
         livePlayer.style.display = 'none';
         liveCtrlEmpty.style.display = 'flex';
         liveCtrlEmpty.innerText = '🖼️ Image on screen';
     } else {
+        // Video: load and play in B panel
         livePlayer.style.display = 'block';
         livePlayer.src = `file://${filePath}`;
         livePlayer.load();
