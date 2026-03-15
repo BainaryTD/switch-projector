@@ -88,15 +88,29 @@ export class MediaDisplay {
             viewerVideo.src = '';
             viewerVideo.srcObject = null;
 
-            // Wait slightly for the livePlayer to actually start its new source before capturing its stream
-            setTimeout(() => {
+            // Wait for livePlayer to actually load and start decoding before capturing stream
+            // Using 'canplay' event for reliable high-quality frame capture
+            const attachStream = () => {
                 if (livePlayer.captureStream) {
                     viewerVideo.srcObject = livePlayer.captureStream();
                 } else if (livePlayer.mozCaptureStream) {
                     viewerVideo.srcObject = livePlayer.mozCaptureStream();
                 }
                 viewerVideo.play().catch(e => console.log(e));
-            }, 100);
+            };
+
+            if (livePlayer.readyState >= 3) {
+                // Already loaded enough — attach immediately
+                attachStream();
+            } else {
+                // Wait for canplay event (video has decoded at least one frame)
+                livePlayer.addEventListener('canplay', attachStream, { once: true });
+                // Fallback: if event never fires within 1s, attach anyway
+                setTimeout(() => {
+                    livePlayer.removeEventListener('canplay', attachStream);
+                    if (!viewerVideo.srcObject) attachStream();
+                }, 1000);
+            }
         }
     }
 }
