@@ -21,7 +21,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1470&auto=format&fit=crop') center/cover;
+            background: #0a0a0a linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%);
             position: absolute;
             z-index: 10;
             color: white;
@@ -57,7 +57,17 @@
     </div>
     <video id="videoPlayer" muted></video>
     <img id="imagePlayer" style="display: none;" />
+    <div id="exitHint"
+        style="position:fixed;bottom:8px;right:12px;color:#888;font-size:11px;font-family:monospace;opacity:0.55;z-index:20;pointer-events:none;transition:opacity 1s;">
+        Esc to exit fullscreen
+    </div>
     <script src="display.js"></script>
+    <script>
+        (function () {
+            const hint = document.getElementById('exitHint');
+            if (hint) setTimeout(() => { hint.style.opacity = '0'; }, 3000);
+        })();
+    </script>
 </body>
 
 </html>

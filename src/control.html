@@ -4,6 +4,15 @@
 <head>
   <meta charset="UTF-8">
   <title>Control Panel</title>
+  <!--
+    Tailwind: ใช้ CDN ชั่วคราว
+    หากต้องการ run แบบ offline ให้:
+      1) npm install
+      2) npm run build:css   (จะสร้าง src/tailwind.css)
+      3) ลบ <script src="https://cdn.tailwindcss.com"></script> บรรทัดล่าง
+         แล้วเปิด <link rel="stylesheet" href="tailwind.css"> แทน
+  -->
+  <!-- <link rel="stylesheet" href="tailwind.css"> -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     /* Custom styles for absolute positioning inside preview containers */
@@ -28,7 +37,12 @@
 </head>
 
 <body class="bg-[#121212] text-white p-5 font-sans">
-  <div class="max-w-4xl mx-auto flex flex-col gap-5">
+  <div id="dropOverlay"
+    class="hidden fixed inset-0 z-50 items-center justify-center bg-blue-500/30 border-4 border-dashed border-blue-400 pointer-events-none">
+    <div class="text-3xl font-bold text-white drop-shadow-lg">📥 Drop files to add to queue</div>
+  </div>
+
+  <div class="max-w-6xl mx-auto flex flex-col gap-5">
     <h1 class="text-3xl font-semibold m-0">Projector Control 🖥️</h1>
 
     <!-- 1. Target Screen -->
@@ -61,12 +75,14 @@
       <h2 class="text-xl font-semibold mt-0 mb-3">3. Media Control (Preview & Live)</h2>
 
       <!-- Split View -->
-      <div class="flex gap-5">
+      <div class="flex flex-col md:flex-row gap-5">
 
         <!-- A: Hold / Standby -->
         <div class="flex-1 flex flex-col min-w-0">
           <div class="flex justify-between items-center mb-1">
             <h3 class="text-lg text-zinc-400 m-0">A. Hold / Standby</h3>
+            <span id="armedBadge"
+              class="hidden bg-yellow-500 text-black px-2 py-0.5 rounded font-bold text-xs">ARMED</span>
           </div>
           <p class="text-sm m-0 mb-3 whitespace-nowrap overflow-hidden text-ellipsis">Selected: <span
               id="lblSelectedPath" class="text-blue-400 break-all">None</span></p>
@@ -132,6 +148,16 @@
                 No media playing
               </div>
             </div>
+
+            <div id="liveTransport" class="flex items-center gap-2 text-xs text-zinc-300 px-1 hidden">
+              <span id="liveTime" class="tabular-nums w-10 text-right">0:00</span>
+              <input type="range" id="liveSeek" min="0" max="100" value="0" step="0.1"
+                class="flex-1 accent-blue-500 cursor-pointer">
+              <span id="liveDuration" class="tabular-nums w-10">0:00</span>
+              <span class="ml-2">🔊</span>
+              <input type="range" id="liveVol" min="0" max="1" step="0.01" value="1"
+                class="w-20 accent-blue-500 cursor-pointer">
+            </div>
           </div>
 
           <div class="mt-auto pt-4 flex flex-col gap-3">
@@ -169,6 +195,33 @@
         id="btnHold">🛑 Emergency Cut to Standby</button>
     </div>
   </div>
+
+  <div id="shortcutHint"
+    class="fixed bottom-2 right-3 text-[11px] text-zinc-500 font-mono opacity-60 pointer-events-none select-none">
+    Press <kbd class="px-1 bg-zinc-800 rounded">?</kbd> for shortcuts
+  </div>
+
+  <div id="shortcutPanel"
+    class="hidden fixed inset-0 z-[60] items-center justify-center bg-black/70" role="dialog">
+    <div class="bg-[#1e1e1e] border border-zinc-700 rounded-lg p-6 max-w-md w-full mx-4 shadow-2xl">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-lg font-semibold m-0">⌨️ Keyboard Shortcuts</h3>
+        <button id="btnCloseShortcuts" class="text-zinc-400 hover:text-white text-xl leading-none">×</button>
+      </div>
+      <ul class="text-sm space-y-1.5 font-mono">
+        <li><kbd class="px-2 bg-zinc-800 rounded">Space</kbd> — Play / Pause</li>
+        <li><kbd class="px-2 bg-zinc-800 rounded">Enter</kbd> — Send to Live (or Quick Send)</li>
+        <li><kbd class="px-2 bg-zinc-800 rounded">S</kbd> — Send to Hold (ARM)</li>
+        <li><kbd class="px-2 bg-zinc-800 rounded">B</kbd> — Emergency Cut to Standby</li>
+        <li><kbd class="px-2 bg-zinc-800 rounded">↑</kbd> / <kbd class="px-2 bg-zinc-800 rounded">↓</kbd> — Move active item in queue</li>
+        <li><kbd class="px-2 bg-zinc-800 rounded">Delete</kbd> — Remove active item</li>
+        <li><kbd class="px-2 bg-zinc-800 rounded">L</kbd> — Toggle Loop</li>
+        <li><kbd class="px-2 bg-zinc-800 rounded">K</kbd> — Toggle Keep Audio</li>
+        <li><kbd class="px-2 bg-zinc-800 rounded">?</kbd> — Toggle this panel</li>
+      </ul>
+    </div>
+  </div>
+
   <script type="module" src="control.js"></script>
 </body>
 

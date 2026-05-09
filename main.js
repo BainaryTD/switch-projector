@@ -8,14 +8,16 @@ let displays = [];
 
 function createControlWindow() {
     controlWindow = new BrowserWindow({
-        width: 900,
-        height: 700,
+        width: 1200,
+        height: 800,
+        minWidth: 900,
+        minHeight: 700,
         title: 'Projector Control - Control Panel',
         webPreferences: {
             preload: path.join(__dirname, 'src', 'preload.js'),
             contextIsolation: true,
             nodeIntegration: false,
-            webSecurity: false // allow local files 
+            webSecurity: false // allow local files
         }
     });
 
@@ -57,6 +59,15 @@ function createDisplayWindow(monitorIndex = null) {
     });
 
     displayWindow.loadFile(path.join(__dirname, 'src', 'display.html'));
+
+    displayWindow.webContents.on('before-input-event', (event, input) => {
+        if (input.type !== 'keyDown') return;
+        if (input.key === 'Escape') {
+            displayWindow.setFullScreen(false);
+        } else if (input.key === 'F11') {
+            displayWindow.setFullScreen(!displayWindow.isFullScreen());
+        }
+    });
 }
 
 app.whenReady().then(() => {

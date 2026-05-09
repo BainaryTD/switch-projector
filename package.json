@@ -6,7 +6,9 @@
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "build:css": "tailwindcss -i ./src/tailwind.in.css -o ./src/tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./src/tailwind.in.css -o ./src/tailwind.css --watch"
   },
   "build": {
     "appId": "com.mario.projectorcontrol",
@@ -23,6 +25,7 @@
   },
   "devDependencies": {
     "electron": "^29.1.5",
-    "electron-builder": "^26.8.1"
+    "electron-builder": "^26.8.1",
+    "tailwindcss": "^3.4.17"
   }
 }
