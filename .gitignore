@@ -122,3 +122,16 @@ dist-zip/
 out/
 release/
 releases/
+
+/bin/bainary-skill.ps1
+/bin/bainary-skill.cmd
+
+# AI tooling (local only)
+.bainary/
+.claude/
+.cursor/
+.cursorrules
+CLAUDE.md
+AGENTS.md
+CURSOR.md
+CONVENTIONS.md

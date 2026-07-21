@@ -14,7 +14,47 @@
   -->
   <!-- <link rel="stylesheet" href="tailwind.css"> -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Tailwind component classes (Play CDN supports @apply via this block) -->
+  <style type="text/tailwindcss">
+    @layer components {
+      .card {
+        @apply bg-slate-900/70 border border-slate-800 rounded-2xl shadow-xl shadow-black/40 backdrop-blur-sm;
+      }
+      .sec-num {
+        @apply inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-800 text-sky-400 text-sm font-bold ring-1 ring-slate-700 shrink-0;
+      }
+      .badge {
+        @apply px-2 py-0.5 rounded-md font-bold text-[11px] tracking-wide uppercase;
+      }
+      .btn {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-150 active:scale-[.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100 disabled:shadow-none focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus-visible:ring-sky-400;
+      }
+      .btn-primary {
+        @apply btn bg-gradient-to-b from-sky-500 to-sky-600 hover:from-sky-400 hover:to-sky-500 text-white shadow-lg shadow-sky-950/50;
+      }
+      .btn-go {
+        @apply btn bg-gradient-to-b from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white shadow-lg shadow-emerald-950/50;
+      }
+      .btn-amber {
+        @apply btn bg-gradient-to-b from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-900 shadow-lg shadow-amber-950/40;
+      }
+      .btn-slate {
+        @apply btn bg-slate-700/80 hover:bg-slate-600 text-slate-100 ring-1 ring-slate-600/50;
+      }
+      .btn-danger {
+        @apply btn bg-gradient-to-b from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 text-white shadow-lg shadow-red-950/50;
+      }
+    }
+  </style>
+
   <style>
+    /* Deep console background */
+    body {
+      background: radial-gradient(1200px 600px at 50% -10%, #16233b 0%, #0b1120 45%, #080b14 100%);
+      min-height: 100vh;
+    }
+
     /* Custom styles for absolute positioning inside preview containers */
     .preview-container #holdPlayer,
     .preview-container #holdImage,
@@ -29,195 +69,250 @@
       image-rendering: -webkit-optimize-contrast;
       image-rendering: crisp-edges;
     }
+
     /* Ensure video renders at native resolution without downscaling */
     video {
       image-rendering: auto;
     }
+
+    /* Slim scrollbars to match the dark theme */
+    *::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    *::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    *::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+      border: 2px solid transparent;
+      background-clip: content-box;
+    }
+    *::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+      background-clip: content-box;
+    }
+
+    /* Soft pulse for the LIVE indicators */
+    @keyframes livePulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+      50%      { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); }
+    }
+    .live-pulse { animation: livePulse 1.8s ease-in-out infinite; }
+
+    /* Screen glow around the live preview frame */
+    .live-frame {
+      box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.4), 0 0 30px -6px rgba(239, 68, 68, 0.35);
+    }
   </style>
 </head>
 
-<body class="bg-[#121212] text-white p-5 font-sans">
+<body class="text-slate-100 font-sans antialiased">
+  <!-- Drag & drop overlay -->
   <div id="dropOverlay"
-    class="hidden fixed inset-0 z-50 items-center justify-center bg-blue-500/30 border-4 border-dashed border-blue-400 pointer-events-none">
-    <div class="text-3xl font-bold text-white drop-shadow-lg">📥 Drop files to add to queue</div>
+    class="hidden fixed inset-0 z-50 items-center justify-center bg-sky-500/25 backdrop-blur-sm border-4 border-dashed border-sky-400 pointer-events-none">
+    <div class="flex flex-col items-center gap-2 text-white drop-shadow-lg">
+      <div class="text-6xl">📥</div>
+      <div class="text-3xl font-bold">Drop files to add to queue</div>
+      <div class="text-sm text-sky-200/80">mp4 · mkv · mov · webm · mp3 · wav · png · jpg · gif · webp</div>
+    </div>
   </div>
 
-  <div class="max-w-6xl mx-auto flex flex-col gap-5">
-    <h1 class="text-3xl font-semibold m-0">Projector Control 🖥️</h1>
+  <!-- ===== Sticky Header + Target Screen ===== -->
+  <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-5 py-3 flex items-center justify-between gap-4 flex-wrap">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="grid place-items-center w-11 h-11 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 text-xl shadow-lg shadow-sky-950/50">
+          🖥️</div>
+        <div class="leading-tight min-w-0">
+          <h1 class="text-xl font-bold m-0 tracking-tight">Projector Control</h1>
+          <p class="text-xs text-slate-400 m-0">Live media switcher</p>
+        </div>
+      </div>
 
-    <!-- 1. Target Screen -->
-    <div class="bg-[#1e1e1e] p-5 rounded-lg shadow-md">
-      <h2 class="text-xl font-semibold mt-0 mb-3">1. Target Screen</h2>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide hidden sm:inline">Target</span>
         <select id="monitorSelect"
-          class="bg-zinc-700 text-white border border-zinc-600 rounded px-3 py-2 text-base h-[42px] m-0"></select>
-        <button class="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded-md transition-colors h-[42px]"
-          id="btnChangeMonitor">Switch Display Window</button>
+          class="bg-slate-800 text-white border border-slate-700 rounded-lg px-3 py-2 text-sm h-[40px] max-w-[240px] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"></select>
+        <button class="btn-slate px-3 h-[40px] text-sm" id="btnChangeMonitor">🔀 Switch Display</button>
+        <span class="text-[11px] text-slate-500 font-mono hidden md:inline-flex items-center gap-1 pl-1">
+          Press <kbd class="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700">?</kbd> for shortcuts
+        </span>
       </div>
     </div>
+  </header>
 
-    <!-- 2. Media Queue -->
-    <div class="bg-[#1e1e1e] p-5 rounded-lg shadow-md">
-      <div class="flex justify-between items-center mb-2">
-        <h2 class="text-xl font-semibold m-0">2. Media Queue</h2>
-        <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 text-sm rounded transition-colors"
-          id="btnSelectFile">➕ Add Files...</button>
-      </div>
-      <div id="playlistContainer"
-        class="max-h-[150px] overflow-y-auto bg-zinc-900 rounded-lg border border-zinc-800 p-1 mt-2">
-        <div id="queueEmpty" class="flex items-center justify-center w-full h-full text-zinc-500 italic py-4">Queue is
-          empty</div>
-      </div>
-    </div>
+  <main class="max-w-7xl mx-auto px-5 pt-5 pb-28 flex flex-col lg:flex-row gap-5 items-stretch lg:items-start">
 
-    <!-- 3. Media Control -->
-    <div class="bg-[#1e1e1e] p-5 rounded-lg shadow-md">
-      <h2 class="text-xl font-semibold mt-0 mb-3">3. Media Control (Preview & Live)</h2>
+    <!-- ===== 1. Media Queue (left sidebar) ===== -->
+    <aside class="w-full lg:w-72 xl:w-80 shrink-0 lg:sticky lg:top-[84px]">
+      <section class="card p-4 flex flex-col lg:max-h-[calc(100vh-104px)]">
+        <div class="flex justify-between items-center mb-3 gap-2">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <span class="sec-num">1</span>
+            <h2 class="text-base font-semibold m-0">Media Queue</h2>
+          </div>
+          <button class="btn-primary px-3 py-1.5 text-xs" id="btnSelectFile">➕ Add</button>
+        </div>
+        <div id="playlistContainer"
+          class="flex-1 max-h-[180px] lg:max-h-none overflow-y-auto bg-slate-950/60 rounded-xl border border-slate-800 p-1.5">
+          <div id="queueEmpty" class="flex items-center justify-center text-center w-full text-slate-500 italic py-6 text-sm">
+            Queue is empty — drag files here or click “Add”</div>
+        </div>
+      </section>
+    </aside>
+
+    <!-- ===== Right column ===== -->
+    <div class="flex-1 min-w-0 flex flex-col gap-5">
+
+    <!-- ===== 2. Media Control ===== -->
+    <section class="card p-5">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="sec-num">2</span>
+        <h2 class="text-lg font-semibold m-0">Media Control</h2>
+        <span class="text-xs text-slate-500">Preview &amp; Live</span>
+      </div>
 
       <!-- Split View -->
-      <div class="flex flex-col md:flex-row gap-5">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
         <!-- A: Hold / Standby -->
-        <div class="flex-1 flex flex-col min-w-0">
+        <div class="flex flex-col min-w-0 rounded-xl border border-slate-800 bg-slate-950/40 p-4">
           <div class="flex justify-between items-center mb-1">
-            <h3 class="text-lg text-zinc-400 m-0">A. Hold / Standby</h3>
-            <span id="armedBadge"
-              class="hidden bg-yellow-500 text-black px-2 py-0.5 rounded font-bold text-xs">ARMED</span>
+            <h3 class="text-sm font-bold text-amber-300/90 uppercase tracking-wide m-0 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span> Hold / Standby
+            </h3>
+            <span id="armedBadge" class="hidden badge bg-amber-400 text-slate-900 live-pulse">● Armed</span>
           </div>
-          <p class="text-sm m-0 mb-3 whitespace-nowrap overflow-hidden text-ellipsis">Selected: <span
-              id="lblSelectedPath" class="text-blue-400 break-all">None</span></p>
+          <p class="text-xs m-0 mb-3 whitespace-nowrap overflow-hidden text-ellipsis text-slate-400">
+            Selected: <span id="lblSelectedPath" class="text-amber-300 break-all font-medium">None</span>
+          </p>
 
-          <div class="flex-1 mt-3 bg-[#111] border border-zinc-800 rounded-lg p-3 flex flex-col min-h-[260px]">
-            <div
-              class="flex-1 w-full bg-black rounded-md overflow-hidden border border-zinc-700 relative preview-container">
-              <video id="holdPlayer" controls muted playsinline preload="auto" style="display: none;"></video>
-              <img id="holdImage" style="display: none;" />
-              <div id="holdEmpty"
-                class="absolute inset-0 flex items-center justify-center bg-[#222] text-zinc-500 italic z-[2]">
-                No Media Selected</div>
-            </div>
+          <div class="flex-1 bg-black rounded-xl overflow-hidden border border-slate-700 relative preview-container min-h-[240px]">
+            <video id="holdPlayer" controls muted playsinline preload="auto" style="display: none;"></video>
+            <img id="holdImage" style="display: none;" />
+            <div id="holdEmpty"
+              class="absolute inset-0 flex items-center justify-center bg-slate-900/60 text-slate-500 italic z-[2] text-sm">
+              No Media Selected</div>
           </div>
 
-          <div class="mt-auto pt-4 flex flex-col gap-3">
-            <button
-              class="w-full py-3 text-lg font-bold bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded transition-colors"
-              id="btnSend" disabled>1. Send to Hold Screen</button>
-            <button
-              class="w-full py-3 text-lg font-bold bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded transition-colors"
-              id="btnQuickLive" disabled>⚡ Quick Send to Live</button>
+          <div class="mt-4 flex flex-col gap-3">
+            <button class="btn-amber w-full py-3 text-base" id="btnSend" disabled>① Send to Hold Screen</button>
+            <button class="btn-go w-full py-3 text-base" id="btnQuickLive" disabled>⚡ Quick Send to Live</button>
           </div>
         </div>
 
         <!-- B: Live Controls -->
-        <div class="flex-1 flex flex-col min-w-0">
+        <div class="flex flex-col min-w-0 rounded-xl border border-red-900/40 bg-red-950/10 p-4">
           <div class="flex justify-between items-center mb-1">
-            <h3 class="text-lg text-zinc-400 m-0">B. Live Controls and Audio Control</h3>
-            <span class="bg-red-500 text-white px-2 py-0.5 rounded font-bold text-xs">LIVE</span>
+            <h3 class="text-sm font-bold text-red-300/90 uppercase tracking-wide m-0 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-red-500 live-pulse"></span> Live Controls &amp; Audio
+            </h3>
+            <span class="badge bg-red-500 text-white live-pulse">● Live</span>
           </div>
-          <p class="text-sm m-0 mb-3 whitespace-nowrap overflow-hidden text-ellipsis" id="liveLabelRow">
-            Playing: <span id="lblLivePath" class="text-green-500">Standby</span>
+          <p class="text-xs m-0 mb-3 whitespace-nowrap overflow-hidden text-ellipsis text-slate-400" id="liveLabelRow">
+            Playing: <span id="lblLivePath" class="text-emerald-400 font-medium">Standby</span>
           </p>
 
-          <div class="flex-1 mt-3 bg-[#111] border border-zinc-800 rounded-lg p-3 flex flex-col gap-2 min-h-[260px]">
-            <div class="flex justify-between flex-wrap gap-4 shrink-0">
-              <div class="flex gap-4">
-                <label class="cursor-pointer font-bold text-sm flex items-center gap-1"><input type="checkbox"
-                    id="chkKeepAudio" class="m-0"> 🎵 Keep Audio</label>
-                <label class="cursor-pointer font-bold text-sm flex items-center gap-1"><input type="checkbox"
-                    id="chkLoop" class="m-0"> 🔁 Loop</label>
-                <label class="font-bold text-sm flex items-center gap-1" title="Fade time in seconds">
-                  ⏱️ Fade: <input type="number" id="numFadeTime"
-                    class="w-16 bg-zinc-700 text-white border border-zinc-600 rounded px-1 min-h-[24px]" value="0.8"
-                    step="0.1" min="0"> s
-                </label>
-              </div>
-              <!-- <div class="flex gap-1.5">
-                <button class="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-1.5 text-sm rounded transition-colors"
-                  id="btnLocalPlay" title="Play">เล่น</button>
-                <button class="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-1.5 text-sm rounded transition-colors"
-                  id="btnLocalPause" title="Pause">หยุด</button>
-              </div> -->
+          <div class="flex-1 bg-black rounded-xl border border-slate-700 relative overflow-hidden flex flex-col min-h-[240px]">
+            <!-- options bar -->
+            <div class="flex justify-between flex-wrap gap-3 shrink-0 p-2.5 bg-slate-900/70 border-b border-slate-800 z-[3] relative">
+              <label class="cursor-pointer font-semibold text-xs flex items-center gap-1.5 text-slate-200">
+                <input type="checkbox" id="chkKeepAudio" class="accent-sky-500 w-4 h-4"> 🎵 Keep Audio</label>
+              <label class="cursor-pointer font-semibold text-xs flex items-center gap-1.5 text-slate-200">
+                <input type="checkbox" id="chkLoop" class="accent-sky-500 w-4 h-4"> 🔁 Loop</label>
+              <label class="font-semibold text-xs flex items-center gap-1.5 text-slate-200" title="Fade time in seconds">
+                ⏱️ Fade
+                <input type="number" id="numFadeTime"
+                  class="w-14 bg-slate-800 text-white border border-slate-600 rounded px-1.5 py-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+                  value="0.8" step="0.1" min="0"> s
+              </label>
             </div>
-            <div
-              class="flex-1 w-full bg-black rounded-md border border-zinc-700 relative overflow-hidden flex items-center justify-center">
+
+            <!-- live player area -->
+            <div class="flex-1 w-full relative flex items-center justify-center">
               <video id="livePlayer" controls playsinline preload="auto" style="display:none;"
                 class="absolute inset-0 w-full h-full object-contain z-[1]"></video>
               <div id="liveControlEmpty"
-                class="absolute inset-0 bg-[#222] text-zinc-500 italic text-sm flex items-center justify-center z-[2]"
+                class="absolute inset-0 bg-slate-900/60 text-slate-500 italic text-sm flex items-center justify-center z-[2]"
                 style="display:flex;">
                 No media playing
               </div>
             </div>
 
-            <div id="liveTransport" class="flex items-center gap-2 text-xs text-zinc-300 px-1 hidden">
+            <!-- transport bar -->
+            <div id="liveTransport"
+              class="flex items-center gap-2 text-xs text-slate-300 px-3 py-2 bg-slate-900/80 border-t border-slate-800 z-[3] relative hidden">
               <span id="liveTime" class="tabular-nums w-10 text-right">0:00</span>
               <input type="range" id="liveSeek" min="0" max="100" value="0" step="0.1"
-                class="flex-1 accent-blue-500 cursor-pointer">
+                class="flex-1 accent-sky-500 cursor-pointer">
               <span id="liveDuration" class="tabular-nums w-10">0:00</span>
               <span class="ml-2">🔊</span>
               <input type="range" id="liveVol" min="0" max="1" step="0.01" value="1"
-                class="w-20 accent-blue-500 cursor-pointer">
+                class="w-20 accent-sky-500 cursor-pointer">
             </div>
           </div>
 
-          <div class="mt-auto pt-4 flex flex-col gap-3">
-            <button
-              class="w-full py-3 text-lg font-bold bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded transition-colors"
-              id="btnPlay" disabled>2. ▶ Send to Live (Play Now)</button>
-            <button
-              class="w-full py-3 text-lg font-bold bg-zinc-700 hover:bg-zinc-600 text-white rounded transition-colors"
-              id="btnSnapshot">📸 Snapshot Live to Queue</button>
+          <div class="mt-4 flex flex-col gap-3">
+            <button class="btn-primary w-full py-3 text-base" id="btnPlay" disabled>② ▶ Send to Live (Play Now)</button>
+            <button class="btn-slate w-full py-3 text-base" id="btnSnapshot">📸 Snapshot Live to Queue</button>
           </div>
         </div>
       </div>
 
       <!-- C: Live Preview -->
-      <div class="mt-5 border-t border-zinc-800 pt-4">
-        <div class="flex justify-between items-center mb-2 mt-2">
-          <h3 class="text-lg text-zinc-400 m-0">C. Live Preview</h3>
-          <span class="bg-red-500 text-white px-2 py-0.5 rounded font-bold text-xs">LIVE</span>
+      <div class="mt-5 border-t border-slate-800 pt-4">
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wide m-0 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-red-500 live-pulse"></span> Live Preview
+          </h3>
+          <span class="badge bg-red-500 text-white live-pulse">● On Air</span>
         </div>
         <div
-          class="w-full aspect-video bg-black rounded-lg overflow-hidden border-2 border-red-500 relative preview-container">
+          class="w-full h-[38vh] min-h-[220px] max-h-[440px] mx-auto bg-black rounded-xl overflow-hidden border-2 border-red-500/70 live-frame relative preview-container">
           <video id="liveViewerVideo" controls muted playsinline preload="auto" style="display: none;"></video>
           <img id="liveViewerImage" style="display: none;" />
           <div id="liveViewerEmpty"
-            class="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-[#222] text-zinc-500 italic z-[2]">
+            class="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-slate-900/60 text-slate-500 italic z-[2]">
             Projector Standby 💤</div>
         </div>
       </div>
-    </div>
+    </section>
+    </div><!-- /right column -->
+  </main>
 
-    <!-- 4. Quick Actions -->
-    <div class="bg-[#1e1e1e] p-5 rounded-lg shadow-md flex flex-col gap-4">
-      <h2 class="text-xl font-semibold m-0">4. Quick Actions</h2>
-      <button class="w-full py-4 text-xl font-bold bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
-        id="btnHold">🛑 Emergency Cut to Standby</button>
+  <!-- ===== Sticky Emergency Action Bar ===== -->
+  <div class="sticky bottom-0 z-40 border-t border-red-900/40 bg-slate-950/85 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-5 py-2.5 flex items-center justify-between gap-3">
+      <span class="text-xs text-slate-400 hidden sm:inline shrink-0">Cuts the projector to standby instantly.</span>
+      <button class="btn-danger py-2 px-4 text-sm font-semibold inline-flex items-center gap-2 shrink-0" id="btnHold">
+        🛑 <span>Emergency Cut to Standby</span>
+        <kbd class="hidden md:inline px-1.5 py-0.5 rounded bg-red-950/60 border border-red-300/30 text-[11px] leading-none">B</kbd>
+      </button>
     </div>
   </div>
 
-  <div id="shortcutHint"
-    class="fixed bottom-2 right-3 text-[11px] text-zinc-500 font-mono opacity-60 pointer-events-none select-none">
-    Press <kbd class="px-1 bg-zinc-800 rounded">?</kbd> for shortcuts
-  </div>
+  <!-- Shortcut helper -->
+  <div id="shortcutHint" class="hidden"></div>
 
-  <div id="shortcutPanel"
-    class="hidden fixed inset-0 z-[60] items-center justify-center bg-black/70" role="dialog">
-    <div class="bg-[#1e1e1e] border border-zinc-700 rounded-lg p-6 max-w-md w-full mx-4 shadow-2xl">
-      <div class="flex justify-between items-center mb-3">
-        <h3 class="text-lg font-semibold m-0">⌨️ Keyboard Shortcuts</h3>
-        <button id="btnCloseShortcuts" class="text-zinc-400 hover:text-white text-xl leading-none">×</button>
+  <div id="shortcutPanel" class="hidden fixed inset-0 z-[60] items-center justify-center bg-black/70 backdrop-blur-sm"
+    role="dialog">
+    <div class="card p-6 max-w-md w-full mx-4">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold m-0 flex items-center gap-2">⌨️ Keyboard Shortcuts</h3>
+        <button id="btnCloseShortcuts" class="text-slate-400 hover:text-white text-2xl leading-none">×</button>
       </div>
-      <ul class="text-sm space-y-1.5 font-mono">
-        <li><kbd class="px-2 bg-zinc-800 rounded">Space</kbd> — Play / Pause</li>
-        <li><kbd class="px-2 bg-zinc-800 rounded">Enter</kbd> — Send to Live (or Quick Send)</li>
-        <li><kbd class="px-2 bg-zinc-800 rounded">S</kbd> — Send to Hold (ARM)</li>
-        <li><kbd class="px-2 bg-zinc-800 rounded">B</kbd> — Emergency Cut to Standby</li>
-        <li><kbd class="px-2 bg-zinc-800 rounded">↑</kbd> / <kbd class="px-2 bg-zinc-800 rounded">↓</kbd> — Move active item in queue</li>
-        <li><kbd class="px-2 bg-zinc-800 rounded">Delete</kbd> — Remove active item</li>
-        <li><kbd class="px-2 bg-zinc-800 rounded">L</kbd> — Toggle Loop</li>
-        <li><kbd class="px-2 bg-zinc-800 rounded">K</kbd> — Toggle Keep Audio</li>
-        <li><kbd class="px-2 bg-zinc-800 rounded">?</kbd> — Toggle this panel</li>
+      <ul class="text-sm space-y-2 font-mono">
+        <li class="flex items-center gap-3"><kbd class="px-2 py-0.5 bg-slate-800 rounded border border-slate-700 min-w-[3.5rem] text-center">Space</kbd> <span class="text-slate-300">Play / Pause</span></li>
+        <li class="flex items-center gap-3"><kbd class="px-2 py-0.5 bg-slate-800 rounded border border-slate-700 min-w-[3.5rem] text-center">Enter</kbd> <span class="text-slate-300">Send to Live (or Quick Send)</span></li>
+        <li class="flex items-center gap-3"><kbd class="px-2 py-0.5 bg-slate-800 rounded border border-slate-700 min-w-[3.5rem] text-center">S</kbd> <span class="text-slate-300">Send to Hold (ARM)</span></li>
+        <li class="flex items-center gap-3"><kbd class="px-2 py-0.5 bg-slate-800 rounded border border-slate-700 min-w-[3.5rem] text-center">B</kbd> <span class="text-slate-300">Emergency Cut to Standby</span></li>
+        <li class="flex items-center gap-3"><kbd class="px-2 py-0.5 bg-slate-800 rounded border border-slate-700 min-w-[3.5rem] text-center">↑ / ↓</kbd> <span class="text-slate-300">Move active item in queue</span></li>
+        <li class="flex items-center gap-3"><kbd class="px-2 py-0.5 bg-slate-800 rounded border border-slate-700 min-w-[3.5rem] text-center">Delete</kbd> <span class="text-slate-300">Remove active item</span></li>
+        <li class="flex items-center gap-3"><kbd class="px-2 py-0.5 bg-slate-800 rounded border border-slate-700 min-w-[3.5rem] text-center">L</kbd> <span class="text-slate-300">Toggle Loop</span></li>
+        <li class="flex items-center gap-3"><kbd class="px-2 py-0.5 bg-slate-800 rounded border border-slate-700 min-w-[3.5rem] text-center">K</kbd> <span class="text-slate-300">Toggle Keep Audio</span></li>
+        <li class="flex items-center gap-3"><kbd class="px-2 py-0.5 bg-slate-800 rounded border border-slate-700 min-w-[3.5rem] text-center">?</kbd> <span class="text-slate-300">Toggle this panel</span></li>
       </ul>
     </div>
   </div>

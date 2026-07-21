@@ -1,31 +1,32 @@
 {
-  "name": "projector-control",
-  "version": "1.0.0",
-  "description": "Multi-monitor media presentation app",
-  "main": "main.js",
-  "scripts": {
-    "start": "electron .",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder",
-    "build:css": "tailwindcss -i ./src/tailwind.in.css -o ./src/tailwind.css --minify",
-    "watch:css": "tailwindcss -i ./src/tailwind.in.css -o ./src/tailwind.css --watch"
-  },
-  "build": {
-    "appId": "com.mario.projectorcontrol",
-    "productName": "Projector Control",
-    "directories": {
-      "output": "dist"
-    },
-    "win": {
-      "target": [
-        "nsis",
-        "portable"
-      ]
-    }
-  },
-  "devDependencies": {
-    "electron": "^29.1.5",
-    "electron-builder": "^26.8.1",
-    "tailwindcss": "^3.4.17"
-  }
+    "name":  "projector-control",
+    "version":  "1.0.0",
+    "description":  "Multi-monitor media presentation app",
+    "main":  "main.js",
+    "scripts":  {
+                    "start":  "electron .",
+                    "pack":  "electron-builder --dir",
+                    "dist":  "electron-builder",
+                    "build:css":  "tailwindcss -i ./src/tailwind.in.css -o ./src/tailwind.css --minify",
+                    "watch:css":  "tailwindcss -i ./src/tailwind.in.css -o ./src/tailwind.css --watch",
+                    "bainary":  ".\\bin\\bainary-skill.cmd"
+                },
+    "build":  {
+                  "appId":  "com.mario.projectorcontrol",
+                  "productName":  "Projector Control",
+                  "directories":  {
+                                      "output":  "dist"
+                                  },
+                  "win":  {
+                              "target":  [
+                                             "nsis",
+                                             "portable"
+                                         ]
+                          }
+              },
+    "devDependencies":  {
+                            "electron":  "^29.1.5",
+                            "electron-builder":  "^26.8.1",
+                            "tailwindcss":  "^3.4.17"
+                        }
 }
